@@ -62,18 +62,19 @@ class SharesInfo():
         try:
             self.checkCsvPath(self.csvPath)
         except CsvError, e:
-            print "Invalid CSV file path:%s \n%s"%(self.csvPath, e)
-            raise e
+            print "Invalid CSV file path:'%s' \n%s"%(self.csvPath, e)
+            return
         
         # process CSV file and collect max shares info.
         try:
             self.maxShareDict = self._processCsvFile()
         except CsvError, e:
-            print "Invalid data in CSV file:%s \n%s"%(self.csvPath, e)
-            raise e
+            print "Invalid data in CSV file:'%s' \n%s"%(self.csvPath, e)
+            return
         
         # print self.maxShareDict
-        self.displayResults()
+        if self.maxShareDict:
+            self.displayResults()
 
 
     def displayResults(self):
@@ -99,13 +100,20 @@ class SharesInfo():
         csvReader = csv.reader(csvFile, delimiter=',')
         headerList = csvReader.next()
 
+        if not len(headerList) >= 3:
+            csvFile.close()
+            message = "Insufficient columns in the CSV file. Cannot Process"
+            raise CsvError(message)    
+            
+
         # Using ordered dict here to keep track of company name and corresponding
         # max shares data. This is a python 2.7 property.
         maxShareDict = collections.OrderedDict()
 
-        companyList = headerList[2:]
+        
 
         """
+        companyList = headerList[2:]
         try:
             self.checkUniqueCompanyNames(companyList)
         except CsvError, e:
@@ -258,7 +266,12 @@ class SharesInfo():
         
 #sharesInfo = SharesInfo('C:/Users/rahulbisen/Documents/GitHub/rahul-five/test_data.csv')
 #sharesInfo = SharesInfo('test_data.csv')
-#sharesInfo.processCsvFile()
+sharesInfo = SharesInfo('duplicate_test_data.csv')
+
+sharesInfo.processCsvFile()
+
+
+
 
 # if __name__ == '__main__':
 #    main()
