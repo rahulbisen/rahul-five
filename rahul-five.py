@@ -3,30 +3,41 @@
 import sys
 import os
 import csv
+import copy
+
+# importing collections to use ordered dictionary in python 2.7
 import collections
 
-# comment
+# CONSTANTS
+COMPANY_HEADER = "COMPANY NAME"
+YEAR_HEADER = "YEAR"
+MONTH_HEADER = "MONTH"
+SHARE_HEADER = "SHARE VALUE"
+MIN_YEAR = 1990
+YEAR_COLUMN = 0
+MONTH_COLUMN = 1
+
 class Company():
     """
-    class to store per company data
+    class to store per company max share value info
     """
     def __init__(self):
         """
-        initialize variable to store only Maxed info.
+        initialize maxShareList to store only max value info.
         """
-        self.maxYear = "NA"
-        self.maxMonth = "NA"
-        # initialising with a very small negative number
+
+        # initialising share valye with a very small negative number.
         # in normal circumstances, we do not expect the share values
-        # to reach this low. This could be improved but currently assuming.
-        
-        self.maxShareValue = -999999
-        
+        # to reach this low. This logic could be improved but currently assuming.
+   
+        # list of tuples for max share info, (year, month, share_value)
+        self.maxShareList = [('NA', 'NA', -999999),]
+
 
 class CsvError(Exception):
     """
     custom exception to raise if CSV file cannot be accessed
-    or is not readable.
+    or is not readable or if it contains invalid data.
     """
     #using the default definition of the Exception class
     pass
@@ -60,35 +71,33 @@ class SharesInfo():
         except CsvError, e:
             print "Invalid data in CSV file:%s \n%s"%(self.csvPath, e)
             return
+        
         # print self.maxShareDict
         self.displayResults()
 
     def displayResults(self):
-        print "\n\n"
+
+        print "\n\nHighest share value details for companies:"
+        print "===========================================\n"
+
+        print "%20s %10s %10s %15s"%(COMPANY_HEADER, YEAR_HEADER, MONTH_HEADER,
+                                  SHARE_HEADER)
         for companyName, companyObject in self.maxShareDict.items():
-            print companyName
-            print "*****************"
-            print "year:", companyObject.maxYear
-            print "month:", companyObject.maxMonth
-            print "maxShareValue:", companyObject.maxShareValue
-            print "\n\n"
-            
+            print "\n"
+            for index, shareInfoTuple in enumerate(companyObject.maxShareList):
+                if not index:
+                    print("%20s %10s %10s %15s"%(companyName, shareInfoTuple[0],
+                                                shareInfoTuple[1], shareInfoTuple[2]))
+                else:
+                    print(" %30s %10s %15s"%(shareInfoTuple[0],
+                                                shareInfoTuple[1], shareInfoTuple[2]))
+
     def processCsvFile(self):
         #csvFile shoud support iterator protocol hence get a file object.
         csvFile = open(self.csvPath, 'rb')
         csvReader = csv.reader(csvFile, delimiter=',')
         headerList = csvReader.next()
 
-        """
-        companysCount = len(headerList)-2
-
-
-        # initialise sharesCacheList with dummy year and month
-        sharesCacheList = ['1990', 'Jan']
-        # and share value of 0 for N companies
-        for i in range(companysCount):
-            sharesCacheList.append(0)
-        """    
         # Using ordered dict here to keep track of company name and corresponding
         # max shares data. This is a python 2.7 property.
         maxShareDict = collections.OrderedDict()
@@ -106,45 +115,98 @@ class SharesInfo():
         rowCount = 0
         for row in csvReader:
             rowCount+= 1
-            if len(row) < len(headerList):
-                print "row %s has missing data. Not considering this row"%rowCount
-                print "Please check the CSV file: %s" %self.csvPath
+            try:
+                self.checkMissingSharesData(rowCount, row, headerList)
+                self.checkExtraSharesData(rowCount, row, headerList)
+                self.verifyYearValue(rowCount, row[YEAR_COLUMN])
+            except CsvError,e:
+                print "\n%s \n\tPlease Check the CSV file: %s" %(e, self.csvPath)
                 continue
-            elif len(row) > len(headerList):
-                print "row %s has extra data. Not considering this row"%rowCount
-                print "Please check the CSV file: %s" %self.csvPath
-                continue
-            else:
-                pass
-
-
-            """        
-            for index in range(2,len(headerList)):
-                try:
-                    shareValue = int(row[i].strip())
-                except Exception,e:
-                    print "Invalid value on row:%s, cloumn:%s \n%s"%(rowCount, sharesIndex, e)
-                    continue
-                if shareValue > sharesCacheList[i]:
-            """     
-
+                
             for index, key in enumerate(maxShareDict):
                 sharesIndex = index+2
                 try:
-                    shareValue = int(row[sharesIndex].strip())
-                except Exception,e:
-                    print "Invalid value on row:%s, cloumn:%s \n%s"%(rowCount, sharesIndex, e)
-                    # maxShareDict[key].maxShareValue = 'NA'
+                    shareValue = self.getIntegerShareValueFromString(rowCount, sharesIndex, row)
+
+                except CsvError, e:
+                    print "\n%s \n\tPlease Check the CSV file: %s" %(e, self.csvPath)
                     continue
                 
                 # companyObject is object of class Company
+                
                 companyObject = maxShareDict[key]
-                if shareValue > companyObject.maxShareValue:
-                    companyObject.maxShareValue = shareValue
-                    companyObject.maxYear = row[0]
-                    companyObject.maxMonth = row[1]
-
+                if any(companyObject.maxShareList):
+                    newShareInfoTuple = (row[YEAR_COLUMN],row[MONTH_COLUMN], shareValue)
+                    for shareInfoTuple in companyObject.maxShareList:
+                        if shareValue > shareInfoTuple[2]:
+                            companyObject.maxShareList = [newShareInfoTuple]
+                            break
+                            
+                        elif shareValue == shareInfoTuple[2]:
+                            companyObject.maxShareList.append(newShareInfoTuple)
+                            break
+                        
+                        else:
+                            continue
+                else:
+                    companyObject.maxShareList.append(newShareInfoTuple) 
+                         
         return maxShareDict
+
+
+    def getIntegerShareValueFromString(self, rowIndex, columnIndex, rowList):
+        try:
+            shareValue = int(rowList[columnIndex].strip())
+
+        except ValueError:
+            errorMessage = "\nInvalid string value at row:%s,cloumn:%s -> '%s'"%(rowIndex,
+                                                 columnIndex, rowList[columnIndex].strip())
+            errorMessage+= "\nCould not convert the string into a number."
+            raise CsvError(errorMessage)
+        
+        except Exception, e:
+            errorMessage = "Error while processing row:%s,cloumn:%s -> '%s'.\n\t%s"%(rowIndex,
+                                                   columnIndex, rowList[columnIndex].strip(),e)
+            raise CsvError(errorMessage)
+        
+        # return integer share value.
+        return shareValue
+
+
+    def verifyYearValue(self, rowIndex, year):
+        try:
+            yearValue = int(year.strip())
+        except ValueError:
+            errorMessage = "\nInvalid string value at row:%s,cloumn:%s -> '%s'"%(rowIndex,
+                                                 YEAR_COLUMN, year)
+            errorMessage+= "\nCould not convert the string into a number."
+            raise CsvError(errorMessage)
+        
+        except Exception, e:
+            errorMessage = "Error while processing row:%s,cloumn:%s -> '%s'.\n\t%s"%(rowIndex,
+                                                   YEAR_COLUMN, year,e)
+            raise CsvError(errorMessage)
+
+        if yearValue < MIN_YEAR:
+            errorMessage = "\nInvalid string value at row:%s,cloumn:%s -> '%s'"%(rowIndex,
+                                                 YEAR_COLUMN, year)
+            errorMessage+= "\nThe tool only considers data from Year:%s"%MIN_YEAR
+            raise CsvError(errorMessage)
+            
+
+    def checkMissingSharesData(self, rowIndex, rowList, headerList):
+        if len(rowList) < len(headerList):
+            errorMessage= "Error while processing row:%s. Insufficient share values data." \
+                                                              "\n\tIgnoring this row."%rowIndex
+            raise CsvError(errorMessage)
+        
+
+    def checkExtraSharesData(self, rowIndex, rowList, headerList):
+        if len(rowList) > len(headerList):
+            errorMessage= "Error while processing row:%s. Unexpected extra share value data."\
+                                                              "\n\tIgnoring this row."%rowIndex
+            raise CsvError(errorMessage)
+
         
     def checkCsvPath(self, csvPath):
         """
