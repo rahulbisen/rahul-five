@@ -228,3 +228,6 @@ class SharesInfo():
         
 sharesInfo = SharesInfo('C:/Users/rahulbisen/Documents/GitHub/rahul-five/test_data.csv')
 sharesInfo.main()
+
+if __name__ == '__main__':
+    main()

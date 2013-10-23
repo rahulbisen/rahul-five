@@ -48,13 +48,13 @@ class SharesInfo():
     class to process the CSV file.
     Assuming that the user initialises the class with csv file path
     """
-    def __init__(self, csvPath):
+    def __init__(self, csvPath=''):
         """
         initialize row data
         """
         self.csvPath = csvPath
 
-    def main(self):
+    def processCsvFile(self):
         """
         the main function
         """
@@ -63,17 +63,18 @@ class SharesInfo():
             self.checkCsvPath(self.csvPath)
         except CsvError, e:
             print "Invalid CSV file path:%s \n%s"%(self.csvPath, e)
-            return
+            raise e
         
         # process CSV file and collect max shares info.
         try:
-            self.maxShareDict = self.processCsvFile()
+            self.maxShareDict = self._processCsvFile()
         except CsvError, e:
             print "Invalid data in CSV file:%s \n%s"%(self.csvPath, e)
-            return
+            raise e
         
         # print self.maxShareDict
         self.displayResults()
+
 
     def displayResults(self):
 
@@ -92,7 +93,7 @@ class SharesInfo():
                     print(" %30s %10s %15s"%(shareInfoTuple[0],
                                                 shareInfoTuple[1], shareInfoTuple[2]))
 
-    def processCsvFile(self):
+    def _processCsvFile(self):
         #csvFile shoud support iterator protocol hence get a file object.
         csvFile = open(self.csvPath, 'rb')
         csvReader = csv.reader(csvFile, delimiter=',')
@@ -101,15 +102,25 @@ class SharesInfo():
         # Using ordered dict here to keep track of company name and corresponding
         # max shares data. This is a python 2.7 property.
         maxShareDict = collections.OrderedDict()
-        
+
+        companyList = headerList[2:]
+
+        """
+        try:
+            self.checkUniqueCompanyNames(companyList)
+        except CsvError, e:
+            raise e
+        """
+
         for companyIndex in range(2, len(headerList)):
             companyName = headerList[companyIndex].strip()
             if companyName in maxShareDict:
-                print "duplicate entry for Conmany Name:%s, column:%s "%(companyName,
+                message = "Duplicate entry for Commany Name:%s, column:%s "%(companyName,
                                                                          companyIndex)
+                message+= "\nExiting!"
                 # close the file
                 csvFile.close()
-                raise CsvError("More than one company shares the same name. Exiting")    
+                raise CsvError(message)    
             else:
                 maxShareDict[companyName] = Company()
 
@@ -158,6 +169,15 @@ class SharesInfo():
                 
         return maxShareDict
 
+    """
+    def checkUniqueCompanyNames(companyList):
+
+        companyNameSet = set(companyList)
+        if not len(companyNameSet) == len(companyList):
+            raise CsvError("More than one company has the same name. Exiting")
+
+        return True
+    """     
 
     def getIntegerShareValueFromString(self, rowIndex, columnIndex, rowList):
         try:
@@ -237,7 +257,8 @@ class SharesInfo():
    
         
 #sharesInfo = SharesInfo('C:/Users/rahulbisen/Documents/GitHub/rahul-five/test_data.csv')
-#sharesInfo.main()
+#sharesInfo = SharesInfo('test_data.csv')
+#sharesInfo.processCsvFile()
 
 # if __name__ == '__main__':
 #    main()
