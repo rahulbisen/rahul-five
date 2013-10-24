@@ -1,11 +1,10 @@
-rahul-five
-==========
+
 
 PROBLEM STATEMENT
+=============================
+      Task
 -------------------------------------------------------------------------------------------------------------------
-Please provide code for the below exercise in .txt (filename should be the <developer name>-<years of experience>)
- 
-Q)  Consider Share prices for a N number of companies given for each month since year     
+Consider Share prices for a N number of companies given for each month since year     
          1990 in a CSV file.  Format of the file is as below with first line as header.
  
 Year,Month,Company A, Company B,Company C, .............Company N
@@ -25,8 +24,9 @@ b) Submit a unit test with sample data to support your solution.
 
 SOLUTION STATEMENT:
 =============================
-      The tool/program for the problem statement mentiond is written in python. below are the details.
+      The tool/program for the problem statement mentiond is written in python. Below are the details.
 
+-------------------------------------------------------------------------------------------------------------------
 1) Specification:
 -----------------------------
 Language: Python
@@ -49,4 +49,5 @@ Platform: Created on windows. Tested on Unix RHEL-6 and Windows 7 starter editio
 3.1) One of the test cases in 'company_shares_test.py', TestCompanyShares.testCheckCsvPathWithUnreadableFile
       fails only on windows as it is difficult, not impossible, to make a file unreadable through the python 
       'os.chmod' method. However, this happens seamlessly on Unix and the test passes. 
-      Need more time to look inti it.
+      Need more time to look into it.
+-------------------------------------------------------------------------------------------------------------------
