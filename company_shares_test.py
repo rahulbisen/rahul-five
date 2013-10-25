@@ -19,6 +19,7 @@ class TestCompanyShares(unittest.TestCase):
     """
     Class for testcases for the module SharesInfo
     """
+    
     def setUp(self):
         self.sharesInfo = SharesInfo()
         self.headerList = ['Year', 'Month', 'Company A', 'Company B', 'Company C', 'Company D']
@@ -38,7 +39,10 @@ class TestCompanyShares(unittest.TestCase):
         self.duplicateCompanyName = self.maxSharesDict.keys()[0]
         self.uniqueCompanyName = 'unique company name'                                    
 
-
+    def tearDown(self):
+        # just passing as python itself is a garbage collecter.
+        pass
+    
     ######################################################################
     # tests for SharesInfo.checkCsvPath                                  #
     ######################################################################
@@ -95,6 +99,7 @@ class TestCompanyShares(unittest.TestCase):
     # test SharesInfo.checkCsvPath when file is not readable by the user.
     # this has to be checked. os.chmod(filePath, 0334) works perfectly on linux
     # making the file unreadable, however it is limited in windows environment
+    @unittest.skipIf(os.name == 'nt', 'Skipping unreadable file test on Windows')
     def testCheckCsvPathWithUnreadableFile(self):
 
         filePath = tempfile.mkstemp(prefix='share_test')[1]

@@ -103,7 +103,7 @@ class SharesInfo():
         try:
             self.checkCsvPath(self.csvPath)
         except CsvError, e:
-            print "Invalid CSV file path:'%s' \n\t%s"%(self.csvPath, e)
+            print "\nInvalid CSV file path: %s \n\t%s"%(self.csvPath, e)
             print "Processing Aborted!"
             return
         
@@ -111,7 +111,7 @@ class SharesInfo():
         try:
             self.maxShareDict = self._processCsvFile()
         except CsvError, e:
-            print "Invalid data in CSV file:'%s' \n\t%s"%(self.csvPath, e)
+            print "\nInvalid data in CSV file: %s \n\t%s"%(self.csvPath, e)
             print "Processing Aborted!"
             return
         
@@ -525,28 +525,13 @@ class SharesInfo():
                                
             exists = os.path.exists(csvPath)
             if not exists:
-                raise CsvError("CSV file '%s' does not exist." %csvPath)
+                raise CsvError("CSV file: %s does not exist." %csvPath)
             if os.path.isdir(csvPath):
-                raise CsvError("file '%s' is a directory." %csvPath)
+                raise CsvError("path: %s is a directory." %csvPath)
             if not os.access(csvPath, os.R_OK):
-                raise CsvError("file '%s' is not readable." %csvPath)
+                raise CsvError("file: %s is not readable." %csvPath)
         except Exception, e:
             raise CsvError(e.message)
 
         return True
    
-        
-#sharesInfo = SharesInfo('C:/Users/rahulbisen/Documents/GitHub/rahul-five/test_data.csv')
-#sharesInfo = SharesInfo('test_data.csv')
-#sharesInfo = SharesInfo('duplicate_company_test_data.csv')
-#sharesInfo = SharesInfo('invalid_header_test_data.csv')
-#sharesInfo = SharesInfo("   ")
-#sharesInfo = SharesInfo(None)
-#sharesInfo = SharesInfo()
-#sharesInfo.processCsvFile()
-
-
-
-
-# if __name__ == '__main__':
-#    main()
