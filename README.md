@@ -29,18 +29,21 @@ SOLUTION STATEMENT:
 1) Specification:
 -----------------------------
 Language: Python
-Language Version: Python 2.7
+Language Version: Python 2.7.5
 Platform: Created on windows. Tested on Unix RHEL-6 and Windows 7 starter edition. should work seemlessly on both.
 
 2) Modules/Files Definition:
 -----------------------------
 2.1) company_shares.py
-      Defines all the classes and methods required for the tool.
-2.2) company_shares_test.py
+      Defines all the classes and methods required for processing CSV data and printing results.
+2.2) process_csv.py
+      This is the main python app that invokes classes and methods from company_shares.py and presents a menu to
+       the user to do variety of tasks.
+2.3) company_shares_test.py
       Defines 26 testcases to perform unittests for the module company_shares.py
-2.3) test_data.csv
+2.4) test_data.csv
       Test CSV file created with sample test data.
-2.4) other CSV files
+2.5) other CSV files
       There are other CSV files in the tool's directory to test various cases for manual testing/debugging.
 
 3) Technical Problems/Issues:
