@@ -21,7 +21,7 @@ b) Submit a unit test with sample data to support your solution.
 
 -------------------------------------------------------------------------------------------------------------------
 
-SOLUTION STATEMENT:
+SOLUTION:
 =============================
       The tool/program for the problem statement mentiond is written in python. Below are the details.
 
